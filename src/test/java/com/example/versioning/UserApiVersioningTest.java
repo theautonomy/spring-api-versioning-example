@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import com.example.versioning.client.UserService;
 import com.example.versioning.model.User;
 
 import org.junit.jupiter.api.BeforeEach;

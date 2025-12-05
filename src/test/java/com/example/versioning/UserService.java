@@ -1,4 +1,4 @@
-package com.example.versioning.client;
+package com.example.versioning;
 
 import java.util.List;
 
