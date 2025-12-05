@@ -1,0 +1,132 @@
+= Spring Framework 7.0 API Versioning Demo
+
+A simple Spring Boot application demonstrating the new API versioning feature introduced in Spring Framework 7.0.
+
+== Features
+
+* *Header-based Versioning*: Uses `X-API-Version` header for version selection
+* *Semantic Versioning*: Supports versions 1.0, 1.1, and 2.0 with range support (e.g., "1.1+" means 1.1 or higher)
+* *Method-level Versioning*: Different controller methods handle different API versions
+* *Backward Compatibility*: Version ranges allow smooth migration paths
+
+== Requirements
+
+* Java 21+
+* Maven 3.9+
+* Spring Framework 7.0.0-M4 (Milestone)
+
+== Build and Run
+
+[source,bash]
+----
+mvn clean install
+mvn spring-boot:run
+----
+
+The application will start on `http://localhost:8080`
+
+== API Endpoints
+
+=== Get All Users
+
+* *Endpoint*: `/api/users`
+* *Supported Versions*: 1.0, 1.1, 2.0
+
+=== Get User by ID
+
+* *Endpoint*: `/api/users/{id}`
+* *Supported Versions*: 1.0, 2.0
+
+=== Create User
+
+* *Endpoint*: `/api/users` (POST)
+* *Supported Versions*: 1.0, 2.0
+
+== Testing API Versioning
+
+All versioning is done via the `X-API-Version` header:
+
+[source,bash]
+----
+# Version 1.0 - Basic version
+curl -H "X-API-Version: 1.0" http://localhost:8080/api/users
+
+# Version 1.1 - Added pagination support
+curl -H "X-API-Version: 1.1" http://localhost:8080/api/users?page=0&size=10
+
+# Version 2.0 - Latest with full user details
+curl -H "X-API-Version: 2.0" http://localhost:8080/api/users
+----
+
+== Version Differences
+
+=== Version 1.0
+* Basic user information (id, username, email)
+* No pagination support
+* Matches exact version "1.0"
+
+=== Version 1.1+
+* Same user structure as 1.0
+* Added pagination support with `page` and `size` query parameters
+* Handles version "1.1" and higher (except when 2.0+ handler takes precedence)
+
+=== Version 2.0+
+* Enhanced user information including `fullName` field
+* Full pagination support
+* Handles version "2.0" and higher
+* Recommended for new integrations
+
+== Testing with cURL
+
+=== Create User - V1.0
+
+[source,bash]
+----
+curl -X POST http://localhost:8080/api/users \
+  -H "X-API-Version: 1.0" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"new_user","email":"new@example.com"}'
+----
+
+=== Create User - V2.0
+
+[source,bash]
+----
+curl -X POST http://localhost:8080/api/users \
+  -H "X-API-Version: 2.0" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"new_user","email":"new@example.com","fullName":"New User"}'
+----
+
+=== Get User by ID - V2.0
+
+[source,bash]
+----
+curl -H "X-API-Version: 2.0" http://localhost:8080/api/users/1
+----
+
+== Configuration
+
+The API versioning is configured in `WebMvcConfig.java` (WebMvcConfig.java:11-16):
+
+[source,java]
+----
+@Override
+public void configureApiVersioning(ApiVersionConfigurer configurer) {
+    // Enable header-based versioning using X-API-Version header
+    configurer.useRequestHeader("X-API-Version");
+
+    // Add supported versions
+    configurer.addSupportedVersions("1.0", "1.1", "2.0");
+}
+----
+
+Controller methods use the `version` parameter in annotations (UserController.java:16):
+
+* `version = "1.0"` - Matches only version 1.0
+* `version = "1.1+"` - Matches version 1.1 and higher
+* `version = "2.0+"` - Matches version 2.0 and higher
+
+== References
+
+* link:https://docs.spring.io/spring-framework/reference/web/webmvc-versioning.html[Spring Framework 7.0 API Versioning Documentation]
